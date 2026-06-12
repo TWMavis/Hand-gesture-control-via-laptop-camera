@@ -3,6 +3,13 @@
 操作:ESC 結束,空白鍵 暫停/恢復控制。
 """
 
+import os
+
+# 關閉 MediaPipe/TensorFlow 的內部雜訊(含無害的遙測上傳失敗訊息),
+# 必須在 import mediapipe 之前設定
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("GLOG_minloglevel", "3")
+
 import time
 
 import cv2

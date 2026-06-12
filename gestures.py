@@ -60,6 +60,12 @@ class GestureEngine:
         pinch_index = _dist(lm[THUMB_TIP], lm[INDEX_TIP]) / palm
         pinch_middle = _dist(lm[THUMB_TIP], lm[MIDDLE_TIP]) / palm
 
+        # 游標跟隨手掌心(手腕與中指根部的中點),比指尖穩定
+        palm_cursor = (
+            (lm[WRIST].x + lm[MIDDLE_MCP].x) / 2.0,
+            (lm[WRIST].y + lm[MIDDLE_MCP].y) / 2.0,
+        )
+
         # 手指是否伸直:指尖離手腕比第二關節(PIP)遠
         def extended(tip, pip):
             return _dist(lm[tip], lm[WRIST]) > _dist(lm[pip], lm[WRIST])
@@ -91,7 +97,7 @@ class GestureEngine:
                 events.append(("drag_start",))
                 self._dragging = True
             if self._dragging:
-                return GestureOutput("DRAG", (lm[INDEX_TIP].x, lm[INDEX_TIP].y), events)
+                return GestureOutput("DRAG", palm_cursor, events)
             # 尚未確定是點擊還是拖曳:鎖定游標避免點擊瞬間飄移
             return GestureOutput("PINCH", None, events)
 
@@ -110,14 +116,14 @@ class GestureEngine:
         if pinch_middle > config.PINCH_EXIT:
             self._right_armed = True
 
-        # --- 3. 手掌張開(四指伸直):左滑=上一頁,游標不動 ---
+        # --- 3. 手掌張開(四指伸直):移動游標,快速左滑=上一頁 ---
         if index_ext and middle_ext and ring_ext and pinky_ext:
             self._scroll_prev_y = None
             if vx < -config.SWIPE_SPEED_THRESHOLD and t >= self._swipe_ready_t:
                 self._swipe_ready_t = t + config.SWIPE_COOLDOWN
                 events.append(("back",))
                 return GestureOutput("SWIPE", None, events)
-            return GestureOutput("PALM", None, events)
+            return GestureOutput("MOVE", palm_cursor, events)
 
         # --- 4. 食指+中指伸直、無名指小指收起:捲動 ---
         if index_ext and middle_ext and not ring_ext and not pinky_ext:
@@ -131,8 +137,8 @@ class GestureEngine:
             return GestureOutput("SCROLL", None, events)
         self._scroll_prev_y = None
 
-        # --- 5. 只伸食指:移動游標 ---
-        if index_ext:
-            return GestureOutput("MOVE", (lm[INDEX_TIP].x, lm[INDEX_TIP].y), events)
+        # --- 5. 其他姿勢:手掌心移動游標;握拳=游標停住(像手指離開觸控板)---
+        if index_ext or middle_ext or ring_ext or pinky_ext:
+            return GestureOutput("MOVE", palm_cursor, events)
 
         return GestureOutput("IDLE", None, events)

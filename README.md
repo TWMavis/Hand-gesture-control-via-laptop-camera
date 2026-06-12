@@ -17,6 +17,8 @@ uv pip install -r requirements.txt --python .venv
 
 ## 執行
 
+雙擊 `HandControl.bat` 即可啟動,或在終端機執行:
+
 ```powershell
 .venv\Scripts\python.exe main.py
 ```
@@ -30,7 +32,8 @@ uv pip install -r requirements.txt --python .venv
 
 | 手勢 | 動作 |
 |---|---|
-| ☝️ 只伸出食指移動 | 移動游標 |
+| 🖐️ 移動手掌(掌心位置) | 移動游標 |
+| ✊ 握拳 | 游標停住(像手指離開觸控板,可重新定位) |
 | 🤏 拇指+食指快速捏放 | 左鍵點擊 |
 | 🤏 拇指+食指捏住不放 | 拖曳(放開即鬆手) |
 | 拇指+中指捏合 | 右鍵點擊 |
